@@ -16,16 +16,23 @@
 - [x] 已建立 jk529-collab/jk529-sanity-studio 私密 repository 並完成 main 分支推送。
 - [ ] 產出可直接用 GitHub 網頁上傳的原始碼資料夾與壓縮包。
 - [ ] 建立可控制且已登入 Vercel jk529 工作區的瀏覽器工作階段，以自動匯入 Studio repository。
-- [ ] 授權 Vercel 存取 jk529-collab/jk529-sanity-studio 私密 repository。
+- [x] 授權 Vercel 存取 jk529-collab/jk529-sanity-studio repository。
 - [x] 已從 jk529-collab/jk529-sanity-studio 建立 Vercel 專案並完成首次部署。
-- [ ] 從無 project 權限的 Google Sanity 帳號登出，改以 project 管理員的 GitHub 帳號登入 Studio。
+- [x] 從無 project 權限的 Google Sanity 帳號登出，改以 project 管理員的 GitHub 帳號登入 Studio。
 - [x] 修正 Structure Builder 清單缺少 `_id` 的錯誤，並通過型別檢查、5 個單元測試與 production 建置。
 - [x] 將 Structure Builder 修正版推送至 main，觸發 Vercel 重新部署。
 - [x] 將下載的 Structure Builder 修正 patch 套用至 Cursor 專案後再提交推送。
-- [ ] 確認 Vercel 修正版部署完成，且 Studio 導覽不再顯示清單缺少 `_id` 的錯誤。
+- [x] 確認 Vercel 修正版部署完成，且 Studio 導覽與內容畫布已正常載入。
+- [x] 將目前欄位表單主入口重構為畫布優先的可視化區塊編輯器。
+- [x] 加入區塊選取外框、浮動／側邊屬性面板與可視化內容調整。
+- [x] 支援畫布中的文字、圖片、CTA、商品卡、FAQ 區塊新增與排序。
+- [x] 將畫布編輯變更安全寫回 Sanity 文件，並保留 SEO 與發布工作流程。
+- [x] 為畫布主編輯器新增元件渲染回歸測試。
+- [ ] 將畫布主編輯器修正版套用至 Cursor 專案並推送 main，觸發 Vercel 自動部署。
 - [x] 為 Structure Builder 的網站設定、商務設定、網站頁面、文章與商品清單項目補上穩定 ID，並通過型別檢查、5 個單元測試與 production 建置。
-- [ ] 查明並解除 Vercel 對提交 7f3b8e0 的修正版部署阻擋原因。
-- [ ] 將 jk529-collab/jk529-sanity-studio 改為公開，解除 Vercel Hobby 的私有 repository 協作部署限制。
-- [ ] 以具 Vercel jk529 專案權限的 Git 提交者身分建立新提交並推送修正版，解除 Hobby 協作部署封鎖。
-- [ ] 使用 a0909302243@gmail.com 作為新 Git 提交者 Email，建立空白重新部署提交並推送 main。
+- [x] 下載第二個導覽清單項目 ID 修正 patch 到 Cursor 電腦的 Downloads 資料夾。
+- [x] 查明並解除 Vercel 對提交 7f3b8e0 的修正版部署阻擋原因。
+- [x] 將 jk529-collab/jk529-sanity-studio 改為公開，解除 Vercel Hobby 的私有 repository 協作部署限制。
+- [x] 以具 Vercel jk529 專案權限的 Git 提交者身分建立新提交並推送修正版，解除 Hobby 協作部署封鎖。
+- [x] 使用 a0909302243@gmail.com 作為新 Git 提交者 Email，建立空白重新部署提交並推送 main。
 - [ ] 正式網址驗證完成後移除 Manus 暫時預覽 origin。

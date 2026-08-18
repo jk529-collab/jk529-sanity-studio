@@ -1,8 +1,35 @@
+import {createElement} from 'react'
 import {renderToStaticMarkup} from 'react-dom/server'
-import {describe, expect, it} from 'vitest'
-import {ContentCanvas, SeoChecklist} from '../src/components'
+import {describe, expect, it, vi} from 'vitest'
+
+vi.mock('sanity', () => ({
+  useClient: () => ({fetch: () => Promise.resolve([])}),
+  useDocumentOperation: () => ({patch: {execute: vi.fn()}}),
+}))
+
+import {CanvasEditor, ContentCanvas, SeoChecklist} from '../src/components'
 
 describe('JK529 Studio document views', () => {
+  it('renders a canvas-first editor with selected structured blocks', () => {
+    const markup = renderToStaticMarkup(createElement(CanvasEditor, {
+      documentId: 'drafts.article-1',
+      document: {
+        displayed: {
+          title: '畫布式內容示範',
+          slug: {current: 'canvas-editor'},
+          body: [{_key: 'block-1', _type: 'block', children: [{_key: 'span-1', _type: 'span', text: '直接在畫布調整內容。'}]}],
+        },
+      },
+      schemaType: {name: 'article'},
+      options: {},
+    } as any))
+
+    expect(markup).toContain('可視化編輯')
+    expect(markup).toContain('直接在畫布調整內容。')
+    expect(markup).toContain('＋ 新增區塊')
+    expect(markup).toContain('選取區塊')
+  })
+
   it('renders a structured article canvas from editorial sections', () => {
     const markup = renderToStaticMarkup(ContentCanvas({
       document: {

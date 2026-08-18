@@ -1,5 +1,5 @@
 import type {DefaultDocumentNodeResolver, StructureResolver} from 'sanity/structure'
-import {ContentCanvas, SeoChecklist} from './components'
+import {CanvasEditor, ContentCanvas, SeoChecklist} from './components'
 
 export const structure: StructureResolver = (S) => S.list().id('content-root').title('內容').items([
   S.listItem().id('site-settings').title('網站設定').child(S.document().schemaType('siteSettings').documentId('siteSettings')),
@@ -13,10 +13,11 @@ export const structure: StructureResolver = (S) => S.list().id('content-root').t
 export const defaultDocumentNode: DefaultDocumentNodeResolver = (S, {schemaType}) => {
   if (['sitePage', 'article', 'product'].includes(schemaType)) {
     return S.document().views([
-      S.view.form().id('editor').title('編輯'),
-      S.view.component(ContentCanvas).id('canvas').title('內容畫布'),
+      S.view.component(CanvasEditor).id('canvas-editor').title('畫布編輯'),
+      S.view.form().id('editor').title('進階欄位'),
+      S.view.component(ContentCanvas).id('canvas').title('內容結構'),
       S.view.component(SeoChecklist).id('seo').title('SEO'),
-    ]).defaultPanes(['editor', 'canvas'])
+    ]).defaultPanes(['canvas-editor'])
   }
   return S.document()
 }
