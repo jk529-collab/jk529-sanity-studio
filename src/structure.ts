@@ -1,7 +1,7 @@
 import type {DefaultDocumentNodeResolver, StructureResolver} from 'sanity/structure'
 import {ContentCanvas, SeoChecklist} from './components'
 
-export const structure: StructureResolver = (S) => S.list().title('內容').items([
+export const structure: StructureResolver = (S) => S.list().id('content-root').title('內容').items([
   S.listItem().title('網站設定').child(S.document().schemaType('siteSettings').documentId('siteSettings')),
   S.listItem().title('商務設定').child(S.document().schemaType('commerceSettings').documentId('commerceSettings')),
   S.divider(),

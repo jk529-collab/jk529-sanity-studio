@@ -5,10 +5,20 @@
 - [x] 通過 Studio 的 TypeScript 檢查、schema 單元測試與 production 建置。
 - [ ] 在可穩定控制的已登入瀏覽器中建立測試內容，驗證內容畫布與 SEO 視圖的互動流程。
 - [x] 為內容畫布與 SEO 檢查視圖加入可重現的元件渲染測試。
-- [ ] 將 Studio 原始碼匯入 Vercel，綁定 studio.jk529.com.tw，並登記正式 origin。
+- [ ] 綁定 studio.jk529.com.tw，並登記正式 Sanity CORS origin。
 - [ ] 取得 GitHub 與 Vercel 的遠端部署連接授權，建立 jk529-sanity-studio repository 並推送 main 分支。
 - [ ] 使用擁有 jk529 權限的外部 GitHub 與 Vercel 帳號完成連接授權。
 - [ ] 接受聊天室中的 GitHub 連接器啟用確認卡，讓已安裝的 GitHub App 可被本對話使用。
 - [x] 產出可由擁有 GitHub／Vercel 專案權限之帳號直接匯入的 Studio 部署包。
 - [x] 產出保留 main 分支與 Git 歷史、可由 Cursor 直接推送的專案壓縮包。
+- [x] 在 Cursor 移除錯誤的 GitHub Desktop 憑證，改用可存取 jk529-合作 的帳號推送 main 分支。
+- [x] 在 GitHub OAuth 認證成功後，從 Cursor 重試推送 main 分支至 jk529-collab/jk529-sanity-studio。
+- [x] 已建立 jk529-collab/jk529-sanity-studio 私密 repository 並完成 main 分支推送。
+- [ ] 產出可直接用 GitHub 網頁上傳的原始碼資料夾與壓縮包。
+- [ ] 建立可控制且已登入 Vercel jk529 工作區的瀏覽器工作階段，以自動匯入 Studio repository。
+- [ ] 授權 Vercel 存取 jk529-collab/jk529-sanity-studio 私密 repository。
+- [x] 已從 jk529-collab/jk529-sanity-studio 建立 Vercel 專案並完成首次部署。
+- [ ] 從無 project 權限的 Google Sanity 帳號登出，改以 project 管理員的 GitHub 帳號登入 Studio。
+- [x] 修正 Structure Builder 清單缺少 `_id` 的錯誤，並通過型別檢查、5 個單元測試與 production 建置。
+- [ ] 將 Structure Builder 修正版推送至 main，觸發 Vercel 重新部署。
 - [ ] 正式網址驗證完成後移除 Manus 暫時預覽 origin。
