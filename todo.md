@@ -7,5 +7,8 @@
 - [x] 為內容畫布與 SEO 檢查視圖加入可重現的元件渲染測試。
 - [ ] 將 Studio 原始碼匯入 Vercel，綁定 studio.jk529.com.tw，並登記正式 origin。
 - [ ] 取得 GitHub 與 Vercel 的遠端部署連接授權，建立 jk529-sanity-studio repository 並推送 main 分支。
+- [ ] 使用擁有 jk529 權限的外部 GitHub 與 Vercel 帳號完成連接授權。
+- [ ] 接受聊天室中的 GitHub 連接器啟用確認卡，讓已安裝的 GitHub App 可被本對話使用。
 - [x] 產出可由擁有 GitHub／Vercel 專案權限之帳號直接匯入的 Studio 部署包。
+- [ ] 產出保留 main 分支與 Git 歷史、可由 Cursor 直接推送的專案壓縮包。
 - [ ] 正式網址驗證完成後移除 Manus 暫時預覽 origin。
