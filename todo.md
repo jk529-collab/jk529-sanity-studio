@@ -20,5 +20,12 @@
 - [x] 已從 jk529-collab/jk529-sanity-studio 建立 Vercel 專案並完成首次部署。
 - [ ] 從無 project 權限的 Google Sanity 帳號登出，改以 project 管理員的 GitHub 帳號登入 Studio。
 - [x] 修正 Structure Builder 清單缺少 `_id` 的錯誤，並通過型別檢查、5 個單元測試與 production 建置。
-- [ ] 將 Structure Builder 修正版推送至 main，觸發 Vercel 重新部署。
+- [x] 將 Structure Builder 修正版推送至 main，觸發 Vercel 重新部署。
+- [x] 將下載的 Structure Builder 修正 patch 套用至 Cursor 專案後再提交推送。
+- [ ] 確認 Vercel 修正版部署完成，且 Studio 導覽不再顯示清單缺少 `_id` 的錯誤。
+- [x] 為 Structure Builder 的網站設定、商務設定、網站頁面、文章與商品清單項目補上穩定 ID，並通過型別檢查、5 個單元測試與 production 建置。
+- [ ] 查明並解除 Vercel 對提交 7f3b8e0 的修正版部署阻擋原因。
+- [ ] 將 jk529-collab/jk529-sanity-studio 改為公開，解除 Vercel Hobby 的私有 repository 協作部署限制。
+- [ ] 以具 Vercel jk529 專案權限的 Git 提交者身分建立新提交並推送修正版，解除 Hobby 協作部署封鎖。
+- [ ] 使用 a0909302243@gmail.com 作為新 Git 提交者 Email，建立空白重新部署提交並推送 main。
 - [ ] 正式網址驗證完成後移除 Manus 暫時預覽 origin。

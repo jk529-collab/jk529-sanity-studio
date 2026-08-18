@@ -2,12 +2,12 @@ import type {DefaultDocumentNodeResolver, StructureResolver} from 'sanity/struct
 import {ContentCanvas, SeoChecklist} from './components'
 
 export const structure: StructureResolver = (S) => S.list().id('content-root').title('內容').items([
-  S.listItem().title('網站設定').child(S.document().schemaType('siteSettings').documentId('siteSettings')),
-  S.listItem().title('商務設定').child(S.document().schemaType('commerceSettings').documentId('commerceSettings')),
+  S.listItem().id('site-settings').title('網站設定').child(S.document().schemaType('siteSettings').documentId('siteSettings')),
+  S.listItem().id('commerce-settings').title('商務設定').child(S.document().schemaType('commerceSettings').documentId('commerceSettings')),
   S.divider(),
-  S.listItem().title('網站頁面').child(S.documentTypeList('sitePage').title('網站頁面').defaultOrdering([{field: '_updatedAt', direction: 'desc'}])),
-  S.listItem().title('文章').child(S.documentTypeList('article').title('文章').defaultOrdering([{field: 'publishedAt', direction: 'desc'}])),
-  S.listItem().title('商品').child(S.documentTypeList('product').title('商品').defaultOrdering([{field: '_updatedAt', direction: 'desc'}])),
+  S.listItem().id('site-pages').title('網站頁面').child(S.documentTypeList('sitePage').id('site-pages').title('網站頁面').defaultOrdering([{field: '_updatedAt', direction: 'desc'}])),
+  S.listItem().id('articles').title('文章').child(S.documentTypeList('article').id('articles').title('文章').defaultOrdering([{field: 'publishedAt', direction: 'desc'}])),
+  S.listItem().id('products').title('商品').child(S.documentTypeList('product').id('products').title('商品').defaultOrdering([{field: '_updatedAt', direction: 'desc'}])),
 ])
 
 export const defaultDocumentNode: DefaultDocumentNodeResolver = (S, {schemaType}) => {
