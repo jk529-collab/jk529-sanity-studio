@@ -39,6 +39,7 @@ type DocumentData = {
 
 type MediaAsset = {_id: string; url?: string; originalFilename?: string}
 type ProductOption = {_id: string; title?: string; summary?: string}
+type PreviewMode = 'desktop' | 'mobile'
 
 const labels: Record<string, string> = {
   heroSection: '首屏主視覺', richTextSection: '圖文內容', imageSection: '圖片／圖集',
@@ -94,6 +95,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const [activeInspector, setActiveInspector] = useState<'content' | 'style'>('content')
   const [showLibrary, setShowLibrary] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop')
   const [media, setMedia] = useState<MediaAsset[]>([])
   const [products, setProducts] = useState<ProductOption[]>([])
   const [saveState, setSaveState] = useState<'idle' | 'saving'>('idle')
@@ -151,6 +153,16 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     saveBlocks(next)
     setSelectedKey(next[0]?._key)
   }
+  const duplicateBlock = (key: string) => {
+    const source = blocks.find((block) => block._key === key)
+    if (!source) return
+    const copy = {...source, _key: createKey()}
+    const index = blocks.findIndex((block) => block._key === key)
+    const next = [...blocks]
+    next.splice(index + 1, 0, copy)
+    saveBlocks(next)
+    setSelectedKey(copy._key)
+  }
   const updatePortable = (block: CanvasBlock, text: string) => {
     if (block._type === 'block') {
       const span = block.children?.[0]
@@ -170,6 +182,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     <header className="canvas-editor__topbar">
       <div className="canvas-editor__identity"><span className="canvas-editor__doc-dot" /><div><small>{schemaType.name === 'article' ? '文章畫布' : schemaType.name === 'product' ? '商品畫布' : '頁面畫布'}</small><strong>可視化編輯</strong></div></div>
       <div className="canvas-editor__status"><i className={saveState === 'saving' ? 'is-saving' : ''} />{saveState === 'saving' ? '正在儲存草稿' : '已與 Sanity 草稿同步'}</div>
+      <div className="canvas-editor__devices" aria-label="畫布預覽尺寸"><button className={previewMode === 'desktop' ? 'is-active' : ''} onClick={() => setPreviewMode('desktop')}>桌面</button><button className={previewMode === 'mobile' ? 'is-active' : ''} onClick={() => setPreviewMode('mobile')}>手機</button></div>
       <button className="canvas-editor__add" onClick={() => setShowLibrary((open) => !open)}>＋ 新增區塊</button>
       {showLibrary && <div className="block-library">{allowedBlocks(schemaType.name).map((type) => <button key={type} onClick={() => addBlock(type)}><span>＋</span><strong>{labels[type]}</strong><small>{type === 'heroSection' ? '首屏與關鍵訊息' : type === 'richTextSection' || type === 'block' ? '文字與圖文段落' : type === 'imageSection' || type === 'image' ? '媒體圖片與替代文字' : type === 'faqSection' ? '問答內容區塊' : '轉換與推薦內容'}</small></button>)}</div>}
     </header>
@@ -179,14 +192,14 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
         <div className="canvas-editor__document-meta"><span>草稿工作區</span><small>/{value.slug?.current || '設定網址 slug'}</small></div>
         <input className="canvas-editor__title" value={title} placeholder="輸入內容標題" onChange={(event) => setTitle(event.target.value)} onBlur={() => title !== value.title && patch({title})} />
         <p className="canvas-editor__hint">直接選取任一區塊，即可在右側調整內容與顯示方式。</p>
-        <div className="canvas-editor__blocks">
+        <div className={`canvas-editor__blocks canvas-editor__blocks--${previewMode}`}>
           {blocks.length === 0 && <button className="canvas-editor__empty" onClick={() => setShowLibrary(true)}>＋ 從第一個內容區塊開始</button>}
           {blocks.map((block, index) => {
             const isSelected = block._key === selected?._key
             const image = mediaById.get(imageRef(block) ?? '')
             return <article key={block._key ?? `${block._type}-${index}`} draggable onDragStart={() => setDraggingKey(block._key)} onDragOver={(event) => event.preventDefault()} onDrop={() => { const from = blocks.findIndex((item) => item._key === draggingKey); moveBlock(from, index); setDraggingKey(undefined) }} onClick={() => setSelectedKey(block._key)} className={`canvas-block canvas-block--${block._type ?? 'unknown'} ${isSelected ? 'is-selected' : ''}`}>
-              <div className="canvas-block__chrome"><span className="canvas-block__index">{String(index + 1).padStart(2, '0')}</span><span className="canvas-block__type">{labels[block._type ?? ''] ?? '內容區塊'}</span><span className="canvas-block__drag">⠿</span></div>
-              <CanvasBlockPreview block={block} imageUrl={image?.url} product={products.find((product) => product._id === block.product?._ref)} />
+              <div className="canvas-block__chrome"><span className="canvas-block__index">{String(index + 1).padStart(2, '0')}</span><span className="canvas-block__type">{labels[block._type ?? ''] ?? '內容區塊'}</span><div className="canvas-block__tools"><button aria-label="複製區塊" onClick={(event) => { event.stopPropagation(); duplicateBlock(block._key!) }}>複製</button><span className="canvas-block__drag" aria-label="拖曳排序">⠿</span></div></div>
+              <CanvasBlockPreview block={block} imageUrl={image?.url} product={products.find((product) => product._id === block.product?._ref)} onUpdate={(changes) => updateBlock(block._key!, changes)} onPortable={(text) => updatePortable(block, text)} />
             </article>
           })}
         </div>
@@ -205,14 +218,16 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   </main>
 }
 
-const CanvasBlockPreview = ({block, imageUrl, product}: {block: CanvasBlock; imageUrl?: string; product?: ProductOption}) => {
-  if (block._type === 'heroSection') return <div className="canvas-preview canvas-preview--hero"><span>{block.eyebrow || '眉標'}</span><h2>{block.heading || '在這裡寫下主要訊息'}</h2><p>{block.summary || '補上摘要，協助讀者快速理解這個段落。'}</p>{block.ctaLabel && <button>{block.ctaLabel}</button>}</div>
+const Editable = ({value, placeholder, className, onCommit}: {value?: string; placeholder: string; className?: string; onCommit: (value: string) => void}) => <span className={className} contentEditable suppressContentEditableWarning role="textbox" aria-label={placeholder} data-placeholder={placeholder} onBlur={(event) => { const next = event.currentTarget.textContent?.trim() ?? ''; if (next !== (value ?? '')) onCommit(next) }}>{value || placeholder}</span>
+
+const CanvasBlockPreview = ({block, imageUrl, product, onUpdate, onPortable}: {block: CanvasBlock; imageUrl?: string; product?: ProductOption; onUpdate: (changes: Partial<CanvasBlock>) => void; onPortable: (text: string) => void}) => {
+  if (block._type === 'heroSection') return <div className="canvas-preview canvas-preview--hero"><Editable value={block.eyebrow} placeholder="眉標" className="canvas-editable canvas-preview__eyebrow" onCommit={(eyebrow) => onUpdate({eyebrow})} /><Editable value={block.heading} placeholder="在這裡寫下主要訊息" className="canvas-editable canvas-preview__heading" onCommit={(heading) => onUpdate({heading})} /><Editable value={block.summary} placeholder="補上摘要，協助讀者快速理解這個區塊。" className="canvas-editable canvas-preview__summary" onCommit={(summary) => onUpdate({summary})} />{block.ctaLabel && <button>{block.ctaLabel}</button>}</div>
   if (block._type === 'imageSection' || block._type === 'image') return <div className="canvas-preview canvas-preview--image">{imageUrl ? <img src={imageUrl} alt={block.image?.alt || block.alt || ''} /> : <div className="canvas-preview__image-empty">選擇媒體圖片</div>}<small>{block.caption || block.image?.alt || block.alt || '請加入替代文字與圖片說明'}</small></div>
-  if (block._type === 'callToActionSection') return <div className="canvas-preview canvas-preview--cta"><span>行動引導</span><h3>{block.heading || '引導讀者採取下一步'}</h3><p>{typeof block.body === 'string' ? block.body : '補上一段簡短說明。'}</p><button>{block.label || '立即了解'}</button></div>
+  if (block._type === 'callToActionSection') return <div className="canvas-preview canvas-preview--cta"><span>行動引導</span><Editable value={block.heading} placeholder="引導讀者採取下一步" className="canvas-editable canvas-preview__heading" onCommit={(heading) => onUpdate({heading})} /><Editable value={typeof block.body === 'string' ? block.body : ''} placeholder="補上一段簡短說明。" className="canvas-editable canvas-preview__summary" onCommit={(body) => onUpdate({body})} /><button>{block.label || '立即了解'}</button></div>
   if (block._type === 'productCalloutSection') return <div className="canvas-preview canvas-preview--product"><span>推薦商品</span><h3>{product?.title || '選擇要推薦的商品'}</h3><p>{block.overrideSummary || product?.summary || '在右側選擇一個商品並補上短說明。'}</p><button>{block.label || '查看商品'}</button></div>
-  if (block._type === 'faqSection') return <div className="canvas-preview canvas-preview--faq"><h3>{block.heading || '常見問題'}</h3>{block.items?.map((item, index) => <div key={item._key ?? index}><strong>{item.question || '問題'}</strong><p>{item.answer || '回答內容'}</p></div>)}</div>
-  if (block._type === 'richTextSection') return <div className="canvas-preview canvas-preview--text"><h3>{block.heading || '區塊標題'}</h3><p>{plainText(block) || '在右側輸入內容。'}</p></div>
-  return <div className="canvas-preview canvas-preview--text"><p>{plainText(block) || '在右側輸入內容。'}</p></div>
+  if (block._type === 'faqSection') return <div className="canvas-preview canvas-preview--faq"><Editable value={block.heading} placeholder="常見問題" className="canvas-editable canvas-preview__heading" onCommit={(heading) => onUpdate({heading})} />{block.items?.map((item, index) => <div key={item._key ?? index}><Editable value={item.question} placeholder="問題" className="canvas-editable canvas-preview__question" onCommit={(question) => onUpdate({items: block.items?.map((current, currentIndex) => currentIndex === index ? {...current, question} : current)})} /><Editable value={item.answer} placeholder="回答內容" className="canvas-editable canvas-preview__answer" onCommit={(answer) => onUpdate({items: block.items?.map((current, currentIndex) => currentIndex === index ? {...current, answer} : current)})} /></div>)}</div>
+  if (block._type === 'richTextSection') return <div className="canvas-preview canvas-preview--text"><Editable value={block.heading} placeholder="區塊標題" className="canvas-editable canvas-preview__heading" onCommit={(heading) => onUpdate({heading})} /><Editable value={plainText(block)} placeholder="在這裡開始撰寫內容。" className="canvas-editable canvas-preview__summary" onCommit={onPortable} /></div>
+  return <div className="canvas-preview canvas-preview--text"><Editable value={plainText(block)} placeholder="在這裡開始撰寫內容。" className="canvas-editable canvas-preview__summary" onCommit={onPortable} /></div>
 }
 
 const InspectorContent = ({block, media, products, onUpdate, onPortable, onPickMedia}: {block: CanvasBlock; media: MediaAsset[]; products: ProductOption[]; onUpdate: (changes: Partial<CanvasBlock>) => void; onPortable: (text: string) => void; onPickMedia: () => void}) => {
