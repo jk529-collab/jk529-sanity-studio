@@ -15,7 +15,10 @@ export default defineConfig({
     ...config,
     server: {
       ...config.server,
-      allowedHosts: ['3333-iuh4uqqgqyitg9rkbarf4-51195bad.sg1.manus.computer'],
+      allowedHosts: [
+        '3333-iuh4uqqgqyitg9rkbarf4-51195bad.sg1.manus.computer',
+        '3333-ihufyzmtdora8qc3wmr0n-a3a210a4.sg2.manus.computer',
+      ],
     },
   }),
 })
