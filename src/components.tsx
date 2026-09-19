@@ -34,6 +34,7 @@ type DocumentData = {
   body?: CanvasBlock[]
   content?: CanvasBlock[]
   excerpt?: string
+  editorialNotes?: string
   seo?: {metaTitle?: string; metaDescription?: string; noIndex?: boolean}
 }
 
@@ -95,6 +96,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const [activeInspector, setActiveInspector] = useState<'content' | 'style'>('content')
   const [showLibrary, setShowLibrary] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
+  const [showPageSettings, setShowPageSettings] = useState(false)
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop')
   const [media, setMedia] = useState<MediaAsset[]>([])
   const [products, setProducts] = useState<ProductOption[]>([])
@@ -183,6 +185,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
       <div className="canvas-editor__identity"><span className="canvas-editor__doc-dot" /><div><small>{schemaType.name === 'article' ? '文章畫布' : schemaType.name === 'product' ? '商品畫布' : '頁面畫布'}</small><strong>可視化編輯</strong></div></div>
       <div className="canvas-editor__status"><i className={saveState === 'saving' ? 'is-saving' : ''} />{saveState === 'saving' ? '正在儲存草稿' : '已與 Sanity 草稿同步'}</div>
       <div className="canvas-editor__devices" aria-label="畫布預覽尺寸"><button className={previewMode === 'desktop' ? 'is-active' : ''} onClick={() => setPreviewMode('desktop')}>桌面</button><button className={previewMode === 'mobile' ? 'is-active' : ''} onClick={() => setPreviewMode('mobile')}>手機</button></div>
+      <button className={`canvas-editor__settings ${showPageSettings ? 'is-active' : ''}`} onClick={() => setShowPageSettings((open) => !open)}>⚙ 頁面設定</button>
       <button className="canvas-editor__add" onClick={() => setShowLibrary((open) => !open)}>＋ 新增區塊</button>
       {showLibrary && <div className="block-library">{allowedBlocks(schemaType.name).map((type) => <button key={type} onClick={() => addBlock(type)}><span>＋</span><strong>{labels[type]}</strong><small>{type === 'heroSection' ? '首屏與關鍵訊息' : type === 'richTextSection' || type === 'block' ? '文字與圖文段落' : type === 'imageSection' || type === 'image' ? '媒體圖片與替代文字' : type === 'faqSection' ? '問答內容區塊' : '轉換與推薦內容'}</small></button>)}</div>}
     </header>
@@ -205,7 +208,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
         </div>
       </div>
       <aside className="canvas-editor__inspector">
-        {selected ? <>
+        {showPageSettings ? <PageSettings value={value} onPatch={patch} /> : selected ? <>
           <header><div><span>選取區塊</span><strong>{labels[selected._type ?? ''] ?? '內容區塊'}</strong></div><button aria-label="刪除目前區塊" onClick={() => removeBlock(selected._key!)}>刪除</button></header>
           <div className="canvas-editor__tabs"><button className={activeInspector === 'content' ? 'is-active' : ''} onClick={() => setActiveInspector('content')}>內容</button><button className={activeInspector === 'style' ? 'is-active' : ''} onClick={() => setActiveInspector('style')}>樣式</button></div>
           {activeInspector === 'content' ? <InspectorContent block={selected} media={media} products={products} onUpdate={(changes) => updateBlock(selected._key!, changes)} onPortable={(text) => updatePortable(selected, text)} onPickMedia={() => setShowMedia(true)} /> : <InspectorStyle block={selected} onUpdate={(changes) => updateBlock(selected._key!, changes)} />}
@@ -216,6 +219,27 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
 
     {showMedia && <div className="media-drawer" role="dialog" aria-modal="true"><div className="media-drawer__backdrop" onClick={() => setShowMedia(false)} /><section><header><div><span>媒體庫</span><h2>選擇一張圖片</h2></div><button onClick={() => setShowMedia(false)}>×</button></header><p>選取後會寫入目前區塊；替代文字請在右側內容面板補上。</p><div className="media-drawer__grid">{media.map((asset) => <button key={asset._id} onClick={() => setImage(asset)}>{asset.url ? <img src={asset.url} alt="" /> : <span>無預覽</span>}<small>{mediaLabel(asset)}</small></button>)}</div>{media.length === 0 && <div className="media-drawer__empty">媒體庫目前沒有可選圖片。請先在「進階欄位」上傳圖片，或稍後重新開啟此面板。</div>}</section></div>}
   </main>
+}
+
+const PageSettings = ({value, onPatch}: {value: DocumentData; onPatch: (set: Record<string, unknown>) => void}) => {
+  const [slug, setSlug] = useState(value.slug?.current ?? '')
+  const [metaTitle, setMetaTitle] = useState(value.seo?.metaTitle ?? '')
+  const [metaDescription, setMetaDescription] = useState(value.seo?.metaDescription ?? '')
+  const [editorialNotes, setEditorialNotes] = useState(value.editorialNotes ?? '')
+  useEffect(() => {
+    setSlug(value.slug?.current ?? '')
+    setMetaTitle(value.seo?.metaTitle ?? '')
+    setMetaDescription(value.seo?.metaDescription ?? '')
+    setEditorialNotes(value.editorialNotes ?? '')
+  }, [value.slug?.current, value.seo?.metaTitle, value.seo?.metaDescription, value.editorialNotes])
+  const commitSlug = () => { const next = slug.trim().replace(/^\/+/, '').replace(/\s+/g, '-'); if (next !== value.slug?.current) onPatch({slug: {_type: 'slug', current: next}}) }
+  const commitSeo = (changes: Record<string, unknown>) => onPatch({seo: {...(value.seo ?? {}), ...changes}})
+  return <div className="page-settings">
+    <header><div><span>頁面設定</span><strong>發布前的完整檢查</strong></div></header>
+    <section className="page-settings__section"><h3>基本資料</h3><label><span>頁面標題</span><input value={value.title ?? ''} readOnly /></label><label><span>網址 slug</span><div className="page-settings__slug"><b>/</b><input value={slug} onChange={(event) => setSlug(event.target.value)} onBlur={commitSlug} onKeyDown={(event) => event.key === 'Enter' && commitSlug()} /></div><small>離開欄位時自動儲存。</small></label></section>
+    <section className="page-settings__section"><h3>SEO</h3><label><span>SEO 標題 <em>{metaTitle.length}/60</em></span><input value={metaTitle} maxLength={60} placeholder={value.title || '沿用頁面標題'} onChange={(event) => setMetaTitle(event.target.value)} onBlur={() => commitSeo({metaTitle})} /></label><label><span>Meta description <em>{metaDescription.length}/160</em></span><textarea rows={4} maxLength={160} value={metaDescription} placeholder="用一句話說明這個頁面" onChange={(event) => setMetaDescription(event.target.value)} onBlur={() => commitSeo({metaDescription})} /></label><label className="page-settings__check"><input type="checkbox" checked={Boolean(value.seo?.noIndex)} onChange={(event) => commitSeo({noIndex: event.target.checked})} /><span>禁止搜尋引擎索引</span></label></section>
+    <section className="page-settings__section"><h3>編輯團隊備註</h3><textarea rows={4} value={editorialNotes} placeholder="僅供團隊內部參考" onChange={(event) => setEditorialNotes(event.target.value)} onBlur={() => onPatch({editorialNotes})} /></section>
+  </div>
 }
 
 const Editable = ({value, placeholder, className, onCommit}: {value?: string; placeholder: string; className?: string; onCommit: (value: string) => void}) => <span className={className} contentEditable suppressContentEditableWarning role="textbox" aria-label={placeholder} data-placeholder={placeholder} onBlur={(event) => { const next = event.currentTarget.textContent?.trim() ?? ''; if (next !== (value ?? '')) onCommit(next) }}>{value || placeholder}</span>
