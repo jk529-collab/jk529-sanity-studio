@@ -68,6 +68,62 @@ const productCallout = defineType({
   preview: {select: {title: 'product.title', subtitle: 'label', media: 'product.mainImage'}, prepare: ({title, subtitle, media}) => ({title: title || '商品卡', subtitle, media})},
 })
 
+const productGrid = defineType({
+  name: 'productGridSection', title: '商品列表', type: 'object',
+  fields: [
+    defineField({name: 'heading', title: '區塊標題', type: 'string', initialValue: '熱門商品'}),
+    defineField({name: 'summary', title: '區塊說明', type: 'text', rows: 2}),
+    defineField({name: 'products', title: '商品', type: 'array', of: [defineArrayMember({type: 'reference', to: [{type: 'product'}]})]}),
+    defineField({name: 'columns', title: '欄數', type: 'number', options: {list: [2, 3, 4]}, initialValue: 3}),
+    defineField({name: 'cardActionLabel', title: '商品卡按鈕文字', type: 'string', initialValue: '查看商品'}),
+  ],
+  preview: {select: {title: 'heading'}, prepare: ({title}) => ({title: title || '商品列表'})},
+})
+
+const productDetail = defineType({
+  name: 'productDetailSection', title: '商品詳情', type: 'object',
+  fields: [
+    defineField({name: 'product', title: '選擇商品', type: 'reference', to: [{type: 'product'}], validation: (Rule) => Rule.required()}),
+    defineField({name: 'showVariants', title: '顯示規格選擇', type: 'boolean', initialValue: true}),
+    defineField({name: 'showCommercePrice', title: '顯示商務系統價格', type: 'boolean', initialValue: true}),
+    defineField({name: 'addToCartLabel', title: '加入購物車文字', type: 'string', initialValue: '加入購物車'}),
+    defineField({name: 'buyNowLabel', title: '立即購買文字', type: 'string', initialValue: '立即購買'}),
+  ],
+  preview: {select: {title: 'product.title', subtitle: 'addToCartLabel', media: 'product.mainImage'}, prepare: ({title, subtitle, media}) => ({title: title || '商品詳情', subtitle, media})},
+})
+
+const cart = defineType({
+  name: 'cartSection', title: '購物車入口', type: 'object',
+  fields: [
+    defineField({name: 'heading', title: '標題', type: 'string', initialValue: '你的購物車'}),
+    defineField({name: 'emptyMessage', title: '空購物車提示', type: 'string', initialValue: '購物車目前是空的。'}),
+    defineField({name: 'checkoutLabel', title: '結帳按鈕文字', type: 'string', initialValue: '前往結帳'}),
+    defineField({name: 'cartPath', title: '購物車路徑／事件識別', type: 'string', initialValue: '/cart', description: '由前台商務後端接手，Studio 不保存購物車內容。'}),
+  ],
+  preview: {select: {title: 'heading', subtitle: 'cartPath'}, prepare: ({title, subtitle}) => ({title: title || '購物車入口', subtitle})},
+})
+
+const mediaGallery = defineType({
+  name: 'mediaGallerySection', title: '媒體圖庫', type: 'object',
+  fields: [
+    defineField({name: 'heading', title: '圖庫標題', type: 'string'}),
+    defineField({name: 'images', title: '圖庫圖片', type: 'array', of: [accessibilityImage]}),
+    defineField({name: 'columns', title: '欄數', type: 'number', options: {list: [2, 3, 4]}, initialValue: 3}),
+    defineField({name: 'showCaptions', title: '顯示圖片說明', type: 'boolean', initialValue: true}),
+  ],
+  preview: {select: {title: 'heading', media: 'images.0'}, prepare: ({title, media}) => ({title: title || '媒體圖庫', media})},
+})
+
+const storeSearch = defineType({
+  name: 'storeSearchSection', title: '商店搜尋', type: 'object',
+  fields: [
+    defineField({name: 'placeholder', title: '搜尋提示文字', type: 'string', initialValue: '搜尋商品'}),
+    defineField({name: 'buttonLabel', title: '搜尋按鈕文字', type: 'string', initialValue: '搜尋'}),
+    defineField({name: 'searchPath', title: '搜尋路徑／事件識別', type: 'string', initialValue: '/search'}),
+  ],
+  preview: {select: {title: 'placeholder', subtitle: 'searchPath'}, prepare: ({title, subtitle}) => ({title: '商店搜尋', subtitle: title || subtitle})},
+})
+
 const faq = defineType({
   name: 'faqSection', title: '常見問題', type: 'object',
   fields: [
@@ -83,7 +139,7 @@ const sitePage = defineType({
   fields: [
     defineField({name: 'title', title: '頁面標題', type: 'string', group: 'content', validation: (Rule) => Rule.required()}),
     defineField({name: 'slug', title: '網址 slug', type: 'slug', group: 'content', options: {source: 'title', maxLength: 96}, validation: (Rule) => Rule.required()}),
-    defineField({name: 'sections', title: '內容區塊', type: 'array', group: 'content', of: [defineArrayMember({type: 'heroSection'}), defineArrayMember({type: 'richTextSection'}), defineArrayMember({type: 'imageSection'}), defineArrayMember({type: 'callToActionSection'}), defineArrayMember({type: 'productCalloutSection'}), defineArrayMember({type: 'faqSection'})]}),
+    defineField({name: 'sections', title: '內容區塊', type: 'array', group: 'content', of: [defineArrayMember({type: 'heroSection'}), defineArrayMember({type: 'richTextSection'}), defineArrayMember({type: 'imageSection'}), defineArrayMember({type: 'mediaGallerySection'}), defineArrayMember({type: 'callToActionSection'}), defineArrayMember({type: 'productCalloutSection'}), defineArrayMember({type: 'productGridSection'}), defineArrayMember({type: 'productDetailSection'}), defineArrayMember({type: 'cartSection'}), defineArrayMember({type: 'storeSearchSection'}), defineArrayMember({type: 'faqSection'})]}),
     defineField({name: 'seo', title: 'SEO', type: 'seo', group: 'seo'}),
     defineField({name: 'editorialNotes', title: '僅限編輯團隊備註', type: 'text', rows: 4, group: 'governance'}),
   ],
@@ -137,4 +193,4 @@ const commerceSettings = defineType({
   ],
 })
 
-export const schemaTypes = [seo, hero, richText, imageSection, cta, productCallout, faq, siteSettings, commerceSettings, sitePage, article, product]
+export const schemaTypes = [seo, hero, richText, imageSection, mediaGallery, cta, productCallout, productGrid, productDetail, cart, storeSearch, faq, siteSettings, commerceSettings, sitePage, article, product]

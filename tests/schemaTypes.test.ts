@@ -9,6 +9,6 @@ describe('JK529 Studio schema', () => {
 
   it('contains structured sections for editor-friendly SEO content', () => {
     const names = schemaTypes.map((schema) => schema.name)
-    expect(names).toEqual(expect.arrayContaining(['heroSection', 'richTextSection', 'imageSection', 'callToActionSection', 'productCalloutSection', 'faqSection']))
+    expect(names).toEqual(expect.arrayContaining(['heroSection', 'richTextSection', 'imageSection', 'mediaGallerySection', 'callToActionSection', 'productCalloutSection', 'productGridSection', 'productDetailSection', 'cartSection', 'storeSearchSection', 'faqSection']))
   })
 })
