@@ -124,6 +124,30 @@ const storeSearch = defineType({
   preview: {select: {title: 'placeholder', subtitle: 'searchPath'}, prepare: ({title, subtitle}) => ({title: '商店搜尋', subtitle: title || subtitle})},
 })
 
+const beforeAfter = defineType({
+  name: 'beforeAfterSection', title: 'Before／After 對照', type: 'object',
+  fields: [defineField({name: 'heading', title: '區塊標題', type: 'string', initialValue: '改變前後'}), defineField({name: 'beforeImage', title: 'Before 圖片', type: 'image', options: {hotspot: true}}), defineField({name: 'afterImage', title: 'After 圖片', type: 'image', options: {hotspot: true}}), defineField({name: 'beforeLabel', title: 'Before 標籤', type: 'string', initialValue: 'Before'}), defineField({name: 'afterLabel', title: 'After 標籤', type: 'string', initialValue: 'After'}), defineField({name: 'description', title: '說明', type: 'text', rows: 3})],
+  preview: {select: {title: 'heading', media: 'afterImage'}, prepare: ({title, media}) => ({title: title || 'Before／After 對照', media})},
+})
+
+const pricing = defineType({
+  name: 'pricingSection', title: '方案報價', type: 'object',
+  fields: [defineField({name: 'heading', title: '區塊標題', type: 'string', initialValue: '選擇適合你的方案'}), defineField({name: 'summary', title: '區塊說明', type: 'text', rows: 2}), defineField({name: 'plans', title: '方案', type: 'array', of: [defineArrayMember({type: 'object', fields: [defineField({name: 'name', title: '方案名稱', type: 'string'}), defineField({name: 'price', title: '價格文字', type: 'string'}), defineField({name: 'description', title: '方案說明', type: 'text', rows: 2}), defineField({name: 'features', title: '特色', type: 'array', of: [defineArrayMember({type: 'string'})]}), defineField({name: 'ctaLabel', title: '按鈕文字', type: 'string', initialValue: '選擇方案'}), defineField({name: 'ctaUrl', title: '按鈕連結', type: 'url'}), defineField({name: 'featured', title: '推薦方案', type: 'boolean', initialValue: false})]})]})],
+  preview: {select: {title: 'heading'}, prepare: ({title}) => ({title: title || '方案報價'})},
+})
+
+const quoteForm = defineType({
+  name: 'quoteFormSection', title: '估價彈窗／智能表單', type: 'object',
+  fields: [defineField({name: 'heading', title: '標題', type: 'string', initialValue: '取得專屬報價'}), defineField({name: 'summary', title: '說明', type: 'text', rows: 3}), defineField({name: 'buttonLabel', title: '開啟按鈕文字', type: 'string', initialValue: '立即估價'}), defineField({name: 'submitLabel', title: '送出按鈕文字', type: 'string', initialValue: '送出需求'}), defineField({name: 'submitPath', title: '送出路徑／事件識別', type: 'string', initialValue: '/api/quote'})],
+  preview: {select: {title: 'heading'}, prepare: ({title}) => ({title: title || '估價彈窗／智能表單'})},
+})
+
+const caseStudy = defineType({name: 'caseStudySection', title: '案例展示', type: 'object', fields: [defineField({name: 'heading', title: '區塊標題', type: 'string', initialValue: '成功案例'}), defineField({name: 'cases', title: '案例', type: 'array', of: [defineArrayMember({type: 'object', fields: [defineField({name: 'title', title: '案例標題', type: 'string'}), defineField({name: 'client', title: '客戶／品牌', type: 'string'}), defineField({name: 'summary', title: '案例摘要', type: 'text', rows: 3}), defineField({name: 'image', title: '案例圖片', type: 'image', options: {hotspot: true}}), defineField({name: 'url', title: '案例連結', type: 'url'})]})]})], preview: {select: {title: 'heading'}, prepare: ({title}) => ({title: title || '案例展示'})}})
+const testimonial = defineType({name: 'testimonialSection', title: '真實客戶回饋', type: 'object', fields: [defineField({name: 'heading', title: '區塊標題', type: 'string', initialValue: '客戶怎麼說'}), defineField({name: 'items', title: '客戶回饋', type: 'array', of: [defineArrayMember({type: 'object', fields: [defineField({name: 'quote', title: '回饋內容', type: 'text', rows: 4}), defineField({name: 'name', title: '姓名', type: 'string'}), defineField({name: 'role', title: '職稱／公司', type: 'string'}), defineField({name: 'rating', title: '評分', type: 'number'})]})]})], preview: {select: {title: 'heading'}, prepare: ({title}) => ({title: title || '真實客戶回饋'})}})
+const lineContact = defineType({name: 'lineContactSection', title: 'LINE 聯繫入口', type: 'object', fields: [defineField({name: 'heading', title: '標題', type: 'string', initialValue: '需要協助嗎？'}), defineField({name: 'summary', title: '說明', type: 'text', rows: 2}), defineField({name: 'buttonLabel', title: '按鈕文字', type: 'string', initialValue: '加入 LINE 好友'}), defineField({name: 'lineUrl', title: 'LINE 連結', type: 'url'}), defineField({name: 'qrCode', title: 'QR Code', type: 'image'})], preview: {select: {title: 'heading', media: 'qrCode'}, prepare: ({title, media}) => ({title: title || 'LINE 聯繫入口', media})}})
+const video = defineType({name: 'videoSection', title: '影片', type: 'object', fields: [defineField({name: 'heading', title: '影片標題', type: 'string'}), defineField({name: 'url', title: '影片網址', type: 'url'}), defineField({name: 'videoFile', title: '影片檔案（選填）', type: 'file', options: {accept: 'video/*'}}), defineField({name: 'poster', title: '封面圖片', type: 'image', options: {hotspot: true}}), defineField({name: 'caption', title: '影片說明', type: 'text', rows: 2}), defineField({name: 'autoplay', title: '自動播放（需靜音）', type: 'boolean', initialValue: false})], preview: {select: {title: 'heading', media: 'poster'}, prepare: ({title, media}) => ({title: title || '影片', media})}})
+const htmlCss = defineType({name: 'htmlCssSection', title: 'HTML／CSS 進階區塊', type: 'object', fields: [defineField({name: 'label', title: '編輯器標籤', type: 'string', initialValue: '進階自訂區塊'}), defineField({name: 'html', title: 'HTML', type: 'text', rows: 10}), defineField({name: 'css', title: 'CSS', type: 'text', rows: 10}), defineField({name: 'scriptAllowed', title: '允許前台腳本', type: 'boolean', initialValue: false})], preview: {select: {title: 'label'}, prepare: ({title}) => ({title: title || 'HTML／CSS 進階區塊'})}})
+
 const faq = defineType({
   name: 'faqSection', title: '常見問題', type: 'object',
   fields: [
@@ -139,7 +163,7 @@ const sitePage = defineType({
   fields: [
     defineField({name: 'title', title: '頁面標題', type: 'string', group: 'content', validation: (Rule) => Rule.required()}),
     defineField({name: 'slug', title: '網址 slug', type: 'slug', group: 'content', options: {source: 'title', maxLength: 96}, validation: (Rule) => Rule.required()}),
-    defineField({name: 'sections', title: '內容區塊', type: 'array', group: 'content', of: [defineArrayMember({type: 'heroSection'}), defineArrayMember({type: 'richTextSection'}), defineArrayMember({type: 'imageSection'}), defineArrayMember({type: 'mediaGallerySection'}), defineArrayMember({type: 'callToActionSection'}), defineArrayMember({type: 'productCalloutSection'}), defineArrayMember({type: 'productGridSection'}), defineArrayMember({type: 'productDetailSection'}), defineArrayMember({type: 'cartSection'}), defineArrayMember({type: 'storeSearchSection'}), defineArrayMember({type: 'faqSection'})]}),
+    defineField({name: 'sections', title: '內容區塊', type: 'array', group: 'content', of: [defineArrayMember({type: 'heroSection'}), defineArrayMember({type: 'richTextSection'}), defineArrayMember({type: 'imageSection'}), defineArrayMember({type: 'mediaGallerySection'}), defineArrayMember({type: 'callToActionSection'}), defineArrayMember({type: 'productCalloutSection'}), defineArrayMember({type: 'productGridSection'}), defineArrayMember({type: 'productDetailSection'}), defineArrayMember({type: 'cartSection'}), defineArrayMember({type: 'storeSearchSection'}), defineArrayMember({type: 'beforeAfterSection'}), defineArrayMember({type: 'pricingSection'}), defineArrayMember({type: 'quoteFormSection'}), defineArrayMember({type: 'caseStudySection'}), defineArrayMember({type: 'testimonialSection'}), defineArrayMember({type: 'lineContactSection'}), defineArrayMember({type: 'videoSection'}), defineArrayMember({type: 'htmlCssSection'}), defineArrayMember({type: 'faqSection'})]}),
     defineField({name: 'seo', title: 'SEO', type: 'seo', group: 'seo'}),
     defineField({name: 'editorialNotes', title: '僅限編輯團隊備註', type: 'text', rows: 4, group: 'governance'}),
   ],
@@ -193,4 +217,4 @@ const commerceSettings = defineType({
   ],
 })
 
-export const schemaTypes = [seo, hero, richText, imageSection, mediaGallery, cta, productCallout, productGrid, productDetail, cart, storeSearch, faq, siteSettings, commerceSettings, sitePage, article, product]
+export const schemaTypes = [seo, hero, richText, imageSection, mediaGallery, cta, productCallout, productGrid, productDetail, cart, storeSearch, beforeAfter, pricing, quoteForm, caseStudy, testimonial, lineContact, video, htmlCss, faq, siteSettings, commerceSettings, sitePage, article, product]
