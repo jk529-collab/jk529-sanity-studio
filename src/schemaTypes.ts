@@ -204,7 +204,7 @@ const product = defineType({
 
 const siteSettings = defineType({
   name: 'siteSettings', title: '網站設定', type: 'document',
-  fields: [defineField({name: 'siteTitle', title: '網站名稱', type: 'string', validation: (Rule) => Rule.required()}), defineField({name: 'siteDescription', title: '網站描述', type: 'text', rows: 3}), defineField({name: 'defaultSeo', title: '預設 SEO', type: 'seo'}), defineField({name: 'defaultLocale', title: '預設語言', type: 'string', initialValue: 'zh-TW'})],
+  fields: [defineField({name: 'siteTitle', title: '網站名稱', type: 'string', validation: (Rule) => Rule.required()}), defineField({name: 'siteDescription', title: '網站描述', type: 'text', rows: 3}), defineField({name: 'frontendUrl', title: '前台網站網址', type: 'url', initialValue: 'https://jk529.com.tw', description: '畫布的「預覽前台」會以此網址加上目前頁面 slug 開啟。'}), defineField({name: 'defaultSeo', title: '預設 SEO', type: 'seo'}), defineField({name: 'defaultLocale', title: '預設語言', type: 'string', initialValue: 'zh-TW'})],
 })
 
 const commerceSettings = defineType({

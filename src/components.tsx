@@ -59,7 +59,7 @@ type CanvasBlock = {
   html?: string
   css?: string
   scriptAllowed?: boolean
-  style?: {theme?: string; align?: string; width?: string; spacing?: string}
+  style?: {theme?: string; align?: string; width?: string; spacing?: string; variant?: string; fontFamily?: string; fontSize?: string; fontWeight?: string; textAlign?: string; textDecoration?: string; textColor?: string; backgroundColor?: string; borderColor?: string; borderStyle?: string; borderWidth?: string; borderRadius?: string}
   overrideSummary?: string
   items?: Array<{_key?: string; question?: string; answer?: string; quote?: string; name?: string; role?: string; rating?: number}>
 }
@@ -153,6 +153,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop')
   const [media, setMedia] = useState<MediaAsset[]>([])
   const [products, setProducts] = useState<ProductOption[]>([])
+  const [frontendUrl, setFrontendUrl] = useState('https://jk529.com.tw')
   const [saveState, setSaveState] = useState<'idle' | 'saving'>('idle')
   const client = useClient({apiVersion: '2024-06-01'})
   const publishedId = documentId.replace(/^drafts\./, '')
@@ -172,6 +173,9 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     client.fetch<ProductOption[]>('*[_type == "product"] | order(_updatedAt desc)[0...50]{_id, title, summary}')
       .then((items) => active && setProducts(items))
       .catch(() => active && setProducts([]))
+    client.fetch<{frontendUrl?: string}>('*[_id == "siteSettings"][0]{frontendUrl}')
+      .then((settings) => active && settings?.frontendUrl && setFrontendUrl(settings.frontendUrl))
+      .catch(() => undefined)
     return () => { active = false }
   }, [client])
 
@@ -238,6 +242,11 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     updateBlock(selected._key!, selected._type === 'image' ? {asset: image.asset, alt: image.alt} : {image})
     setShowMedia(false)
   }
+  const openFrontendPreview = () => {
+    const base = frontendUrl.replace(/\/$/, '')
+    const slug = value.slug?.current ? `/${value.slug.current.replace(/^\//, '')}` : '/'
+    window.open(`${base}${slug}?preview=1`, '_blank', 'noopener,noreferrer')
+  }
 
   return <main className="canvas-editor">
     <header className="canvas-editor__topbar">
@@ -245,6 +254,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
       <div className="canvas-editor__status"><i className={saveState === 'saving' ? 'is-saving' : ''} />{saveState === 'saving' ? '正在儲存草稿' : '已與 Sanity 草稿同步'}</div>
       <div className="canvas-editor__devices" aria-label="畫布預覽尺寸"><button className={previewMode === 'desktop' ? 'is-active' : ''} onClick={() => setPreviewMode('desktop')}>桌面</button><button className={previewMode === 'mobile' ? 'is-active' : ''} onClick={() => setPreviewMode('mobile')}>手機</button></div>
       <button className={`canvas-editor__settings ${showPageSettings ? 'is-active' : ''}`} onClick={() => setShowPageSettings((open) => !open)}>⚙ 頁面設定</button>
+      <button className="canvas-editor__preview" onClick={openFrontendPreview}>↗ 預覽前台</button>
       <button className="canvas-editor__add" onClick={() => setShowLibrary((open) => !open)}>＋ 新增區塊</button>
       {showLibrary && <div className="block-library"><div className="block-library__group-label">內容與媒體</div>{allowedBlocks(schemaType.name).map((type) => <button key={type} onClick={() => addBlock(type)}><span>＋</span><strong>{labels[type]}</strong><small>{type === 'heroSection' ? '首屏與關鍵訊息' : type === 'richTextSection' || type === 'block' ? '文字與圖文段落' : type === 'imageSection' || type === 'image' ? '單張圖片與替代文字' : type === 'mediaGallerySection' ? '從媒體庫建立圖片圖庫' : type === 'productGridSection' ? '多個商品的展示網格' : type === 'productDetailSection' ? '商品資訊、規格與購物操作' : type === 'cartSection' ? '購物車入口與結帳導向' : type === 'storeSearchSection' ? '商品搜尋入口' : type === 'faqSection' ? '問答內容區塊' : '轉換與推薦內容'}</small></button>)}</div>}
     </header>
@@ -259,7 +269,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
           {blocks.map((block, index) => {
             const isSelected = block._key === selected?._key
             const image = mediaById.get(imageRef(block) ?? '')
-            return <article key={block._key ?? `${block._type}-${index}`} draggable onDragStart={() => setDraggingKey(block._key)} onDragOver={(event) => event.preventDefault()} onDrop={() => { const from = blocks.findIndex((item) => item._key === draggingKey); moveBlock(from, index); setDraggingKey(undefined) }} onClick={() => setSelectedKey(block._key)} className={`canvas-block canvas-block--${block._type ?? 'unknown'} canvas-block--theme-${block.style?.theme || 'default'} canvas-block--width-${block.style?.width || 'full'} ${isSelected ? 'is-selected' : ''}`}>
+            return <article key={block._key ?? `${block._type}-${index}`} draggable onDragStart={() => setDraggingKey(block._key)} onDragOver={(event) => event.preventDefault()} onDrop={() => { const from = blocks.findIndex((item) => item._key === draggingKey); moveBlock(from, index); setDraggingKey(undefined) }} onClick={() => setSelectedKey(block._key)} className={`canvas-block canvas-block--${block._type ?? 'unknown'} canvas-block--theme-${block.style?.theme || 'default'} canvas-block--width-${block.style?.width || 'full'} canvas-block--align-${block.style?.textAlign || 'left'} canvas-block--variant-${block.style?.variant || 'standard'} canvas-block--spacing-${block.style?.spacing || 'normal'} ${isSelected ? 'is-selected' : ''}`} style={{fontFamily: block.style?.fontFamily || 'Noto Sans TC, system-ui, sans-serif', fontSize: block.style?.fontSize || '15px', fontWeight: block.style?.fontWeight || '400', color: block.style?.textColor || undefined, backgroundColor: block.style?.backgroundColor || undefined, borderColor: block.style?.borderColor || undefined, borderStyle: block.style?.borderStyle || undefined, borderWidth: block.style?.borderWidth || undefined, borderRadius: block.style?.borderRadius || undefined, textDecoration: block.style?.textDecoration || undefined}}>
               <div className="canvas-block__chrome"><span className="canvas-block__index">{String(index + 1).padStart(2, '0')}</span><span className="canvas-block__type">{labels[block._type ?? ''] ?? '內容區塊'}</span><div className="canvas-block__tools"><button aria-label="複製區塊" onClick={(event) => { event.stopPropagation(); duplicateBlock(block._key!) }}>複製</button><span className="canvas-block__drag" aria-label="拖曳排序">⠿</span></div></div>
               <CanvasBlockPreview block={block} imageUrl={image?.url} imageUrls={(block.images ?? []).map((item) => mediaById.get(item.asset?._ref ?? '')?.url).filter(Boolean) as string[]} product={products.find((product) => product._id === block.product?._ref)} onUpdate={(changes) => updateBlock(block._key!, changes)} onPortable={(text) => updatePortable(block, text)} />
             </article>
@@ -351,7 +361,23 @@ const InspectorContent = ({block, media, products, onUpdate, onPortable, onPickM
   return <div className="canvas-editor__inspector-empty">此區塊尚無可調整欄位。</div>
 }
 
-const InspectorStyle = ({block, onUpdate}: {block: CanvasBlock; onUpdate: (changes: Partial<CanvasBlock>) => void}) => { const style = block.style ?? {}; const patchStyle = (changes: Partial<NonNullable<CanvasBlock['style']>>) => onUpdate({style: {...style, ...changes}}); return <div className="inspector-fields inspector-style"><p>樣式／版面設定只影響目前區塊，不改變內容、SEO 或商務資料。</p><label><span>視覺主題</span><select value={style.theme || 'default'} onChange={(event) => patchStyle({theme: event.target.value})}><option value="default">預設</option><option value="soft">柔和</option><option value="dark">深色</option><option value="accent">強調</option></select></label><label><span>內容寬度</span><select value={style.width || 'full'} onChange={(event) => patchStyle({width: event.target.value})}><option value="full">滿版</option><option value="content">內文寬度</option><option value="narrow">窄版</option></select></label><label><span>文字對齊</span><select value={style.align || 'left'} onChange={(event) => patchStyle({align: event.target.value})}><option value="left">靠左</option><option value="center">置中</option><option value="right">靠右</option></select></label><label><span>上下間距</span><select value={style.spacing || 'normal'} onChange={(event) => patchStyle({spacing: event.target.value})}><option value="compact">緊湊</option><option value="normal">標準</option><option value="loose">寬鬆</option></select></label>{(block._type === 'imageSection') && <label><span>圖片版型</span><select value={block.layout || 'content'} onChange={(event) => onUpdate({layout: event.target.value})}><option value="wide">寬幅</option><option value="content">內文寬度</option><option value="left">靠左</option></select></label>}<div className="style-preview"><span>即時套用</span><p>桌面與手機畫布會立即套用這些版面選項；正式前台依相同設計 token 渲染。</p></div></div> }
+const InspectorStyle = ({block, onUpdate}: {block: CanvasBlock; onUpdate: (changes: Partial<CanvasBlock>) => void}) => {
+  const style = block.style ?? {}
+  const patchStyle = (changes: Partial<NonNullable<CanvasBlock['style']>>) => onUpdate({style: {...style, ...changes}})
+  const cssPreview = `font-family: ${style.fontFamily || 'Noto Sans TC, system-ui, sans-serif'};\nfont-size: ${style.fontSize || '15px'};\nfont-weight: ${style.fontWeight || '400'};\ntext-align: ${style.textAlign || 'left'};\ncolor: ${style.textColor || '#1F2937'};\nbackground: ${style.backgroundColor || 'transparent'};`
+  return <div className="inspector-fields inspector-style">
+    <p>預設為 15px、字重 400、Noto Sans TC／系統無襯線體。所有調整只影響目前區塊，並會寫回草稿。</p>
+    <label><span>版型變體</span><select value={style.variant || 'standard'} onChange={(event) => patchStyle({variant: event.target.value})}><option value="standard">標準</option><option value="compact">緊湊</option><option value="split">左右分欄</option><option value="featured">強調</option></select></label>
+    <div className="inspector-style__button-row"><button className={style.fontWeight === '700' ? 'is-active' : ''} onClick={() => patchStyle({fontWeight: style.fontWeight === '700' ? '400' : '700'})}>B</button><button className={style.textDecoration === 'underline' ? 'is-active' : ''} onClick={() => patchStyle({textDecoration: style.textDecoration === 'underline' ? 'none' : 'underline'})}>U</button></div>
+    <label><span>字型家族</span><select value={style.fontFamily || 'Noto Sans TC, system-ui, sans-serif'} onChange={(event) => patchStyle({fontFamily: event.target.value})}><option value="Noto Sans TC, system-ui, sans-serif">Noto Sans TC／系統無襯線體</option><option value="system-ui, sans-serif">系統無襯線體</option><option value="Georgia, serif">Georgia 襯線體</option><option value="ui-monospace, monospace">等寬字體</option></select></label>
+    <div className="inspector-style__grid"><label><span>文字大小</span><select value={style.fontSize || '15px'} onChange={(event) => patchStyle({fontSize: event.target.value})}><option value="13px">13px</option><option value="15px">15px（預設）</option><option value="16px">16px</option><option value="18px">18px</option><option value="24px">24px</option><option value="32px">32px</option></select></label><label><span>字型粗細</span><select value={style.fontWeight || '400'} onChange={(event) => patchStyle({fontWeight: event.target.value})}><option value="300">300</option><option value="400">400（正常）</option><option value="500">500</option><option value="700">700（粗體）</option></select></label></div>
+    <label><span>文字對齊</span><select value={style.textAlign || 'left'} onChange={(event) => patchStyle({textAlign: event.target.value})}><option value="left">靠左</option><option value="center">置中</option><option value="right">靠右</option></select></label>
+    <div className="inspector-style__section"><strong>邊框</strong><div className="inspector-style__grid"><label><span>邊框色彩</span><input type="color" value={style.borderColor || '#1F2937'} onChange={(event) => patchStyle({borderColor: event.target.value})} /></label><label><span>邊框樣式</span><select value={style.borderStyle || 'solid'} onChange={(event) => patchStyle({borderStyle: event.target.value})}><option value="none">無</option><option value="solid">實線</option><option value="dashed">虛線</option><option value="dotted">點線</option></select></label><label><span>邊框粗細</span><select value={style.borderWidth || '1px'} onChange={(event) => patchStyle({borderWidth: event.target.value})}><option value="0px">0px</option><option value="1px">1px</option><option value="2px">2px</option><option value="4px">4px</option></select></label><label><span>圓角半徑</span><select value={style.borderRadius || '8px'} onChange={(event) => patchStyle({borderRadius: event.target.value})}><option value="0px">0px</option><option value="4px">4px</option><option value="8px">8px</option><option value="16px">16px</option></select></label></div></div>
+    <div className="inspector-style__section"><strong>色彩與排版</strong><div className="inspector-style__grid"><label><span>文字色彩</span><input type="color" value={style.textColor || '#1F2937'} onChange={(event) => patchStyle({textColor: event.target.value})} /></label><label><span>背景色彩</span><input type="color" value={style.backgroundColor || '#FFFFFF'} onChange={(event) => patchStyle({backgroundColor: event.target.value})} /></label></div><label><span>文字裝飾</span><select value={style.textDecoration || 'none'} onChange={(event) => patchStyle({textDecoration: event.target.value})}><option value="none">無</option><option value="underline">底線</option><option value="line-through">刪除線</option></select></label></div>
+    <label><span>內容寬度</span><select value={style.width || 'full'} onChange={(event) => patchStyle({width: event.target.value})}><option value="full">滿版</option><option value="content">內文寬度</option><option value="narrow">窄版</option></select></label>
+    <div className="style-preview"><span>HTML/CSS 進階預覽</span><pre>{cssPreview}</pre></div>
+  </div>
+}
 
 const Field = ({label, value, onChange}: {label: string; value?: string; onChange: (value: string) => void}) => <label><span>{label}</span><input value={value ?? ''} onChange={(event) => onChange(event.target.value)} /></label>
 const TextArea = ({label, value, onChange}: {label: string; value?: string; onChange: (value: string) => void}) => <label><span>{label}</span><textarea rows={4} value={value ?? ''} onChange={(event) => onChange(event.target.value)} /></label>
