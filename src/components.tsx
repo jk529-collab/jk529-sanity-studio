@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState, type DragEvent} from 'react'
+import {useEffect, useMemo, useRef, useState, type DragEvent} from 'react'
 import {useClient, useDocumentOperation} from 'sanity'
 import type {UserViewComponent} from 'sanity/structure'
 
@@ -152,6 +152,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const [showPageSettings, setShowPageSettings] = useState(false)
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop')
   const [isEditorFullscreen, setIsEditorFullscreen] = useState(false)
+  const editorRootRef = useRef<HTMLElement>(null)
   const [media, setMedia] = useState<MediaAsset[]>([])
   const [products, setProducts] = useState<ProductOption[]>([])
   const [frontendUrl, setFrontendUrl] = useState('https://jk529.com.tw')
@@ -167,7 +168,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   }, [documentId, value.title, JSON.stringify(sourceBlocks)])
 
   useEffect(() => {
-    const syncFullscreenState = () => setIsEditorFullscreen(Boolean(window.document.fullscreenElement))
+    const syncFullscreenState = () => setIsEditorFullscreen(window.document.fullscreenElement === editorRootRef.current)
     window.document.addEventListener('fullscreenchange', syncFullscreenState)
     return () => window.document.removeEventListener('fullscreenchange', syncFullscreenState)
   }, [])
@@ -257,13 +258,13 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const toggleEditorFullscreen = async () => {
     try {
       if (window.document.fullscreenElement) await window.document.exitFullscreen()
-      else await window.document.documentElement.requestFullscreen()
+      else if (editorRootRef.current) await editorRootRef.current.requestFullscreen()
     } catch {
       setIsEditorFullscreen((current) => !current)
     }
   }
 
-  return <main className={`canvas-editor ${isEditorFullscreen ? 'canvas-editor--fullscreen' : ''}`}>
+  return <main ref={editorRootRef} className={`canvas-editor ${isEditorFullscreen ? 'canvas-editor--fullscreen' : ''}`}>
     <header className="canvas-editor__topbar">
       <div className="canvas-editor__identity"><span className="canvas-editor__doc-dot" /><div><small>{schemaType.name === 'article' ? '文章畫布' : schemaType.name === 'product' ? '商品畫布' : '頁面畫布'}</small><strong>可視化編輯</strong></div></div>
       <div className="canvas-editor__status"><i className={saveState === 'saving' ? 'is-saving' : ''} />{saveState === 'saving' ? '正在儲存草稿' : '已與 Sanity 草稿同步'}</div>
