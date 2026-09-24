@@ -151,6 +151,7 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
   const [showMedia, setShowMedia] = useState(false)
   const [showPageSettings, setShowPageSettings] = useState(false)
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop')
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false)
   const [media, setMedia] = useState<MediaAsset[]>([])
   const [products, setProducts] = useState<ProductOption[]>([])
   const [frontendUrl, setFrontendUrl] = useState('https://jk529.com.tw')
@@ -164,6 +165,12 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     setTitle(value.title ?? '')
     if (!selectedKey || !sourceBlocks.some((block) => block._key === selectedKey)) setSelectedKey(sourceBlocks[0]?._key)
   }, [documentId, value.title, JSON.stringify(sourceBlocks)])
+
+  useEffect(() => {
+    const syncFullscreenState = () => setIsEditorFullscreen(Boolean(window.document.fullscreenElement))
+    window.document.addEventListener('fullscreenchange', syncFullscreenState)
+    return () => window.document.removeEventListener('fullscreenchange', syncFullscreenState)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -247,14 +254,23 @@ export const CanvasEditor: UserViewComponent = ({document, documentId, schemaTyp
     const slug = value.slug?.current ? `/${value.slug.current.replace(/^\//, '')}` : '/'
     window.open(`${base}${slug}?preview=1`, '_blank', 'noopener,noreferrer')
   }
+  const toggleEditorFullscreen = async () => {
+    try {
+      if (window.document.fullscreenElement) await window.document.exitFullscreen()
+      else await window.document.documentElement.requestFullscreen()
+    } catch {
+      setIsEditorFullscreen((current) => !current)
+    }
+  }
 
-  return <main className="canvas-editor">
+  return <main className={`canvas-editor ${isEditorFullscreen ? 'canvas-editor--fullscreen' : ''}`}>
     <header className="canvas-editor__topbar">
       <div className="canvas-editor__identity"><span className="canvas-editor__doc-dot" /><div><small>{schemaType.name === 'article' ? '文章畫布' : schemaType.name === 'product' ? '商品畫布' : '頁面畫布'}</small><strong>可視化編輯</strong></div></div>
       <div className="canvas-editor__status"><i className={saveState === 'saving' ? 'is-saving' : ''} />{saveState === 'saving' ? '正在儲存草稿' : '已與 Sanity 草稿同步'}</div>
       <div className="canvas-editor__devices" aria-label="畫布預覽尺寸"><button className={previewMode === 'desktop' ? 'is-active' : ''} onClick={() => setPreviewMode('desktop')}>桌面</button><button className={previewMode === 'mobile' ? 'is-active' : ''} onClick={() => setPreviewMode('mobile')}>手機</button></div>
       <button className={`canvas-editor__settings ${showPageSettings ? 'is-active' : ''}`} onClick={() => setShowPageSettings((open) => !open)}>⚙ 頁面設定</button>
       <button className="canvas-editor__preview" onClick={openFrontendPreview}>↗ 預覽前台</button>
+      <button className="canvas-editor__fullscreen" onClick={toggleEditorFullscreen} aria-label={isEditorFullscreen ? '返回正常模式' : '全螢幕展開'}>{isEditorFullscreen ? '⤢ 返回正常模式' : '⛶ 全螢幕展開'}</button>
       <button className="canvas-editor__add" onClick={() => setShowLibrary((open) => !open)}>＋ 新增區塊</button>
       {showLibrary && <div className="block-library"><div className="block-library__group-label">內容與媒體</div>{allowedBlocks(schemaType.name).map((type) => <button key={type} onClick={() => addBlock(type)}><span>＋</span><strong>{labels[type]}</strong><small>{type === 'heroSection' ? '首屏與關鍵訊息' : type === 'richTextSection' || type === 'block' ? '文字與圖文段落' : type === 'imageSection' || type === 'image' ? '單張圖片與替代文字' : type === 'mediaGallerySection' ? '從媒體庫建立圖片圖庫' : type === 'productGridSection' ? '多個商品的展示網格' : type === 'productDetailSection' ? '商品資訊、規格與購物操作' : type === 'cartSection' ? '購物車入口與結帳導向' : type === 'storeSearchSection' ? '商品搜尋入口' : type === 'faqSection' ? '問答內容區塊' : '轉換與推薦內容'}</small></button>)}</div>}
     </header>
